@@ -1,16 +1,28 @@
 package com.example.testbarang;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.sip.SipSession;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.content.Context;
+import android.widget.Toast;
+
 import java.util.ArrayList;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 
 public class AdapterLihatBarang extends
         RecyclerView.Adapter<AdapterLihatBarang.ViewHolder> {
+    private final LihatBarang Listener;
     private ArrayList<Barang> daftarBarang;
     private Context context;
 
@@ -20,6 +32,7 @@ public class AdapterLihatBarang extends
          */
         daftarBarang = barangs;
         context = ctx;
+        Listener = (LihatBarang) context;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -70,6 +83,37 @@ public class AdapterLihatBarang extends
                 return true;
             }
         });
+
+        holder.tvTitle.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(final View view) {
+                final String[] action = {"Update", "Delete"};
+                AlertDialog.Builder alert = new AlertDialog.Builder(view.getContext());
+                alert.setItems(action,  new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int i) {
+                        switch (i){
+                            case 0:
+
+                                Bundle bundle = new Bundle();
+                                bundle.putString("Nomor Barang", daftarBarang.get(position).getKode());
+                                bundle.putString("Nama Barang", daftarBarang.get(position).getNama());
+                                Intent intent = new Intent(view.getContext(), Update.class);
+                                intent.putExtras(bundle);
+                                context.startActivity(intent);
+                                break;
+                            case 1:
+                                listener.onDeleteData(daftarBarang.get(position), position);
+                                break;
+                        }
+                    }
+                });
+                alert.create();
+                alert.show();
+                return true;
+            }
+        });
+
         holder.tvTitle.setText(name);
     }
     @Override
@@ -79,4 +123,10 @@ public class AdapterLihatBarang extends
          */
         return daftarBarang.size();
     }
+    public interface dataListener{
+
+        void onDeleteData(Barang data, int position);
+    }
+
+    dataListener listener;
 }
